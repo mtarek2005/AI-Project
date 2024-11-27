@@ -28,7 +28,7 @@ def main():
     global board
     # initialize the pygame module
     pygame.init()
-    pygame.display.set_caption("OS Project")
+    pygame.display.set_caption("Pente - AI Project")
     # create a surface on screen that has the size of 240 x 180
     screen = pygame.display.set_mode((w,h))
     
