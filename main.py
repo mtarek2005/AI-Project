@@ -12,6 +12,7 @@ h=800
 # ai type: None for 2 player game
 ai_type=None
 AIs: dict={"mnmx":minmax_only.do_ai,"ABp":AB_pruning.do_ai,"h1":heuristic1.do_ai,"h2":heuristic2.do_ai}
+ai_choice_menu=[("No AI",None),("MinMax","mnmx"),("AB pruning","ABp"),("H1","h1"),("H2","h2")]
 
 #positions: 0 empty, 1 white, 2 black
 board=[[0]*19 for i in range(19)]
@@ -19,7 +20,7 @@ turn=0
 num_moves=0
 winner=0
 captures=[0,0]
-
+game_started=False
 
 # define a main function
 def main():
@@ -31,12 +32,12 @@ def main():
     pygame.display.set_caption("Pente - AI Project")
     # create a surface on screen that has the size of 240 x 180
     screen = pygame.display.set_mode((w,h))
-    
+
     
     # load font, prepare values
     font = pygame.font.Font(None, 128)
 
-    draw(screen,font)
+    draw_menu(screen,pygame.font.Font(None, 64))
     turn=1
 
     # define a variable to control the main loop
@@ -50,27 +51,60 @@ def main():
                 # change the value to False, to exit the main loop
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                u=min(w,h)/(19)
-                loc=pygame.mouse.get_pos()
-                int_loc=(int(loc[0]//u),int(loc[1]//u))
-                print(loc)
-                print(int_loc)
-                if(board[int_loc[0]][int_loc[1]]==0 and (int_loc==(9,9) or num_moves!=0) and winner==0):
-                    board[int_loc[0]][int_loc[1]]=turn
-                    turn=(1 if turn==2 else 2)
-                    num_moves+=1
-                    do_move(int_loc)
-                    if(ai_type!=None and winner==0):
-                        ai_move=do_ai(int_loc)
-                        if(board[ai_move[0]][ai_move[1]]!=0):
-                            raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m already occupied\033[0m")
-                        if(not (min(ai_move[0],ai_move[1])>=0 and max(ai_move[0],ai_move[1])<19)):
-                            raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m out of bounds\033[0m")
-                        board[ai_move[0]][ai_move[1]]=turn
-                        turn=(1 if turn==2 else 2)
-                        num_moves+=1
-                        do_move(ai_move)
-                draw(screen,font)
+                if not game_started:
+                    menu_on_click(screen,font)
+                else:
+                    ingame_on_click(screen,font)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+
+def menu_on_click(screen:pygame.Surface,font=pygame.font.Font):
+    global ai_type
+    global game_started
+    u=h/len(ai_choice_menu)
+    loc=pygame.mouse.get_pos()
+    choice=int(loc[1]//u)
+    print(choice)
+    ai_type=ai_choice_menu[choice][1]
+    print(ai_type)
+    game_started=True
+    draw(screen,font)
+
+def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
+    global num_moves
+    global turn
+    global board
+    u=min(w,h)/(19)
+    loc=pygame.mouse.get_pos()
+    int_loc=(int(loc[0]//u),int(loc[1]//u))
+    print(loc)
+    print(int_loc)
+    if(board[int_loc[0]][int_loc[1]]==0 and (int_loc==(9,9) or num_moves!=0) and winner==0):
+        board[int_loc[0]][int_loc[1]]=turn
+        turn=(1 if turn==2 else 2)
+        num_moves+=1
+        do_move(int_loc)
+        if(ai_type!=None and winner==0):
+            ai_move=do_ai(int_loc)
+            if(board[ai_move[0]][ai_move[1]]!=0):
+                raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m already occupied\033[0m")
+            if(not (min(ai_move[0],ai_move[1])>=0 and max(ai_move[0],ai_move[1])<19)):
+                raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m out of bounds\033[0m")
+            board[ai_move[0]][ai_move[1]]=turn
+            turn=(1 if turn==2 else 2)
+            num_moves+=1
+            do_move(ai_move)
+    draw(screen,font)
+
+def draw_menu(screen:pygame.Surface,font=pygame.font.Font,w:int=w,h:int=h,lw:int=3,bgC:pygame.Color=(161,102,47),rectC:pygame.Color=(10,20,200),fontC:pygame.Color=(255,255,255),wpC:pygame.Color=(220,220,220),bpC:pygame.Color=(40,40,40)):
+    u=h/len(ai_choice_menu)
+    screen.fill(bgC)
+    for i in range(len(ai_choice_menu)):
+        pygame.draw.rect(screen,rectC,(u*0.05,(i+0.05)*u,w-u*0.1,u*0.9))
+        ren = font.render(ai_choice_menu[i][0], 1, fontC)
+        screen.blit(ren, (w/2-ren.get_width()/2, (i*u)+u/2-ren.get_rect().height/2))
+    pygame.display.flip()
 
 def draw(screen:pygame.Surface,font=pygame.font.Font,w:int=w,h:int=h,lw:int=3,bgC:pygame.Color=(161,102,47),lnC:pygame.Color=(10,20,10),fontC:pygame.Color=(10,70,10),wpC:pygame.Color=(220,220,220),bpC:pygame.Color=(40,40,40)):
     u=min(w,h)/(19)
@@ -204,12 +238,11 @@ def do_move(loc:tuple[int,int]):
                 board[row+dir[0]*1][col+dir[1]*1]=0
                 board[row+dir[0]*2][col+dir[1]*2]=0
                 captures[inv_color-1]+=2
-                print(captures)
+                print(f"Capture! white stones captured:{captures[0]}, black stones captured:{captures[1]}")
     if(captures[0]>=10):
         winner=2
     if(captures[1]>=10):
         winner=1
-    pass
 
 def do_ai(last_move:tuple[int,int],board:list[list[int]]=board,captures:tuple[int,int]=tuple(captures),turn:int=turn,num_moves:int=num_moves)->tuple[int,int]:
     return AIs[ai_type](last_move,board,captures,turn,num_moves)
