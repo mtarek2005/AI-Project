@@ -2,7 +2,7 @@
 # install with `pip install pygame`
 import math
 import pygame
-import minmax_only
+import minimax_only
 import AB_pruning
 import heuristic1
 import heuristic2
@@ -11,8 +11,8 @@ w=800
 h=800
 # ai type: None for 2 player game
 ai_type=None
-AIs: dict={"mnmx":minmax_only.do_ai,"ABp":AB_pruning.do_ai,"h1":heuristic1.do_ai,"h2":heuristic2.do_ai}
-ai_choice_menu=[("No AI",None),("MinMax","mnmx"),("AB pruning","ABp"),("H1","h1"),("H2","h2")]
+AIs: dict={"mnmx":minimax_only.do_ai,"ABp":AB_pruning.do_ai,"h1":heuristic1.do_ai,"h2":heuristic2.do_ai}
+ai_choice_menu=[("No AI",None),("Minimax","mnmx"),("Alpha-Beta pruning","ABp"),("Heuristic Function 1","h1"),("Heuristic Function 2","h2")]
 
 #positions: 0 empty, 1 white, 2 black
 board=[[0]*19 for i in range(19)]
