@@ -68,8 +68,12 @@ def minimax(board, depth, maximizing_player, captures, turn, alpha=-math.inf, be
         return min_eval, best_move
 
 
-
-def do_ai(last_move, board, captures, turn, num_moves):
+# last move: previous player's last move position
+# board: 19x19 array in the form board[row(from 0 to 18)][column(from 0 to 18)] where 0=no stone, 1=player 1's white stone, 2=player 2's black stone
+# captures: number of peices captured, captures[0] is white stones(p1) captured by black(p2), captures[1] is black stones(p2) captured by white(p1)
+# turn: 1 if player 1's turn(white) or 2 if player 2's turn(black)
+# num_moves: number of moves since game started
+def do_ai(last_move:tuple[int,int],board:list[list[int]],captures:tuple[int,int],turn:int,num_moves:int)->tuple[int,int]:
     try:
         depth = 2
         _, best_move = minimax(board, depth, True, captures, turn)
