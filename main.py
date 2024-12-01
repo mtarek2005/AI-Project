@@ -2,7 +2,7 @@
 # install with `pip install pygame`
 import math
 import pygame
-import minimax_only
+from minimax_only import do_ai
 import AB_pruning
 import heuristic1
 import heuristic2
@@ -11,8 +11,8 @@ w=800
 h=800
 # ai type: None for 2 player game
 ai_type=None
-AIs: dict={"mnmx":minimax_only.do_ai,"ABp":AB_pruning.do_ai,"h1":heuristic1.do_ai,"h2":heuristic2.do_ai}
-ai_choice_menu=[("No AI",None),("Minimax","mnmx"),("Alpha-Beta pruning","ABp"),("Heuristic Function 1","h1"),("Heuristic Function 2","h2")]
+AIs: dict = {"mnmx": do_ai, "ABp": AB_pruning.do_ai, "h1": heuristic1.do_ai, "h2": heuristic2.do_ai}
+ai_choice_menu = [("No AI", None), ("Minimax", "mnmx"), ("Alpha-Beta pruning", "ABp"), ("Heuristic Function 1", "h1"), ("Heuristic Function 2", "h2")]
 
 #positions: 0 empty, 1 white, 2 black
 board=[[0]*19 for i in range(19)]
@@ -71,31 +71,39 @@ def menu_on_click(screen:pygame.Surface,font=pygame.font.Font):
     game_started=True
     draw(screen,font)
 
-def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
-    global num_moves
-    global turn
-    global board
-    u=min(w,h)/(19)
-    loc=pygame.mouse.get_pos()
-    int_loc=(int(loc[0]//u),int(loc[1]//u))
-    print(loc)
-    print(int_loc)
-    if(board[int_loc[0]][int_loc[1]]==0 and (int_loc==(9,9) or num_moves!=0) and winner==0):
-        board[int_loc[0]][int_loc[1]]=turn
-        turn=(1 if turn==2 else 2)
-        num_moves+=1
+def ingame_on_click(screen: pygame.Surface, font=pygame.font.Font):
+    global num_moves, turn, board
+    u = min(w, h) / 19
+    loc = pygame.mouse.get_pos()
+    int_loc = (int(loc[0] // u), int(loc[1] // u))
+
+    if not (0 <= int_loc[0] < 19 and 0 <= int_loc[1] < 19):
+        print(f"Invalid click position: {int_loc}")
+        return
+
+    if board[int_loc[0]][int_loc[1]] == 0 and winner == 0:
+        board[int_loc[0]][int_loc[1]] = turn
+        turn = 1 if turn == 2 else 2
+        num_moves += 1
         do_move(int_loc)
-        if(ai_type!=None and winner==0):
-            ai_move=do_ai(int_loc)
-            if(board[ai_move[0]][ai_move[1]]!=0):
-                raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m already occupied\033[0m")
-            if(not (min(ai_move[0],ai_move[1])>=0 and max(ai_move[0],ai_move[1])<19)):
-                raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m out of bounds\033[0m")
-            board[ai_move[0]][ai_move[1]]=turn
-            turn=(1 if turn==2 else 2)
-            num_moves+=1
+
+        if ai_type and winner == 0:
+            ai_move = do_ai(int_loc, board=board, captures=tuple(captures), turn=turn, num_moves=num_moves)
+
+            if not ai_move or not (0 <= ai_move[0] < 19 and 0 <= ai_move[1] < 19):
+                print(f"Invalid AI move: {ai_move}")
+                return
+            if board[ai_move[0]][ai_move[1]] != 0:
+                print(f"AI Move Already Occupied: {ai_move}")
+                return
+
+            board[ai_move[0]][ai_move[1]] = turn
+            turn = 1 if turn == 2 else 2
+            num_moves += 1
             do_move(ai_move)
-    draw(screen,font)
+
+    draw(screen, font)
+
 
 def draw_menu(screen:pygame.Surface,font=pygame.font.Font,w:int=w,h:int=h,lw:int=3,bgC:pygame.Color=(161,102,47),rectC:pygame.Color=(10,20,200),fontC:pygame.Color=(255,255,255),wpC:pygame.Color=(220,220,220),bpC:pygame.Color=(40,40,40)):
     u=h/len(ai_choice_menu)
@@ -245,6 +253,8 @@ def do_move(loc:tuple[int,int]):
         winner=1
 
 def do_ai(last_move:tuple[int,int],board:list[list[int]]=board,captures:tuple[int,int]=tuple(captures),turn:int=turn,num_moves:int=num_moves)->tuple[int,int]:
+    if winner != 0:
+        print("Game over. No more moves allowed.")
     return AIs[ai_type](last_move,board,captures,turn,num_moves)
 
 # run the main function only if this module is executed as the main script
