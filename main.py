@@ -86,11 +86,11 @@ def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
         num_moves+=1
         do_move(int_loc)
         if(ai_type!=None and winner==0):
-            ai_move=do_ai(int_loc)
-            if(board[ai_move[0]][ai_move[1]]!=0):
-                raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m already occupied\033[0m")
+            ai_move=do_ai(int_loc, board=board, captures=tuple(captures), turn=turn, num_moves=num_moves)
             if(not (min(ai_move[0],ai_move[1])>=0 and max(ai_move[0],ai_move[1])<19)):
                 raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m out of bounds\033[0m")
+            if(board[ai_move[0]][ai_move[1]]!=0):
+                raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m already occupied\033[0m")
             board[ai_move[0]][ai_move[1]]=turn
             turn=(1 if turn==2 else 2)
             num_moves+=1
