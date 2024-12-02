@@ -61,9 +61,9 @@ def minimax(board, depth, maximizing_player, captures, turn, last_move:tuple[int
                 # print(f"max:{eval_score}>{max_eval} as {turn}")
                 max_eval = eval_score
                 best_move = move
-            alpha = max(alpha, eval_score)
-            if beta <= alpha:
-                break
+          #  alpha = max(alpha, eval_score)
+           # if beta <= alpha:
+            #    break
         return max_eval, best_move, count
     else:
         min_eval = math.inf
@@ -80,9 +80,9 @@ def minimax(board, depth, maximizing_player, captures, turn, last_move:tuple[int
                 # print(f"min:{eval_score}<{min_eval} as {turn}")
                 min_eval = eval_score
                 best_move = move
-            beta = min(beta, eval_score)
-            if beta <= alpha:
-                break
+           # beta = min(beta, eval_score)
+            #if beta <= alpha:
+             # pass
         return min_eval, best_move, count
 
 def get_new_captures(board,color,captures,row,col):
