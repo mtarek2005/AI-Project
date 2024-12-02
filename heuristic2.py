@@ -3,6 +3,6 @@
 # captures: number of peices captured, captures[0] is white stones(p1) captured by black(p2), captures[1] is black stones(p2) captured by white(p1)
 # turn: 1 if player 1's turn(white) or 2 if player 2's turn(black)
 # num_moves: number of moves since game started
-def do_ai(last_move:tuple[int,int],board:list[list[int]],captures:tuple[int,int],turn:int,num_moves:int)->tuple[int,int]:
+def do_ai(last_move:tuple[int,int],before_last_move:tuple[int,int],board:list[list[int]],captures:tuple[int,int],turn:int,num_moves:int)->tuple[int,int]:
     move=(0,0)
     return move

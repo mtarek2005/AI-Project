@@ -1,10 +1,12 @@
 import math
 
 
-def evaluate(board, captures, turn, move):
+def evaluate(board, captures, turn, move, last_move):
     score = 0
-    matches=get_matches(board,move[0],move[1],turn)
+    matches=get_matches(board,move,turn)
+    inv_matches=get_matches(board,last_move,3-turn)
     max_match=max(matches)
+    max_inv_match=max(inv_matches)
     winner=turn if max_match >= 5 else (1 if captures[0]>=10 else 2 if captures[1]>=10 else 0)
     # for row in range(19):
     #     for col in range(19):
@@ -13,15 +15,15 @@ def evaluate(board, captures, turn, move):
     #         elif board[row][col] == 3 - turn:
     #             score -= 1
     score = 100 if winner==turn else 0
-    score += captures[turn - 1] * 10
-    score -= captures[2 - turn] * 10
+    score -= max_match*20
+    score += max_inv_match*20
+    score -= captures[turn - 1] * 10
+    score += captures[2 - turn] * 10
     return score
 
 
 def is_terminal(board, captures, color, move):
-    row=move[0]
-    col=move[1]
-    return any(capture >= 10 for capture in captures) or not any(0 in row for row in board) or max(get_matches(board,row,col,color))>=5
+    return any(capture >= 10 for capture in captures) or not any(0 in row for row in board) or max(get_matches(board,move,color))>=5
 
 
 def get_possible_moves(board):
@@ -33,12 +35,13 @@ def get_possible_moves(board):
     return moves
 
 
-def minimax(board, depth, maximizing_player, captures, turn, last_move:tuple[int,int], alpha=-math.inf, beta=math.inf):
+def minimax(board, depth, maximizing_player, captures, turn, last_move:tuple[int,int], before_last_move:tuple[int,int], alpha=-math.inf, beta=math.inf):
     count=1
-    print(f"last move: {last_move}, depth: {depth}")
-    if depth == 0 or is_terminal(board, captures, turn, last_move):
-        print("terminal")
-        return evaluate(board, captures, turn, last_move), last_move, count
+    #print(f"last move: {last_move}, bef last: {before_last_move}, depth: {depth}")
+    if depth == 0 or is_terminal(board, captures, 3-turn, last_move):
+        if depth!=0:
+            print("terminal")
+        return evaluate(board, captures, 3-turn, last_move, before_last_move), last_move, count
     possible_moves = get_possible_moves(board)
     best_move = None
     inv_color=3-turn
@@ -49,13 +52,13 @@ def minimax(board, depth, maximizing_player, captures, turn, last_move:tuple[int
             row, col = move
             board[row][col] = turn
             positions_captured,new_captures = get_new_captures(board,color,captures,row,col)
-            eval_score, _, new_count = minimax(board, depth - 1, False, new_captures, 3 - turn, move, alpha, beta)
+            eval_score, _, new_count = minimax(board, depth - 1, False, new_captures, 3 - turn, move, last_move, alpha, beta)
             count+=new_count
             board[row][col] = 0
             for pos in positions_captured:
                 board[pos[0]][pos[1]]=inv_color
             if eval_score > max_eval:
-                print("max")
+                # print(f"max:{eval_score}>{max_eval} as {turn}")
                 max_eval = eval_score
                 best_move = move
             alpha = max(alpha, eval_score)
@@ -68,13 +71,13 @@ def minimax(board, depth, maximizing_player, captures, turn, last_move:tuple[int
             row, col = move
             board[row][col] = 3 - turn
             positions_captured,new_captures = get_new_captures(board,color,captures,row,col)
-            eval_score, _, new_count = minimax(board, depth - 1, True, new_captures, turn, move, alpha, beta)
+            eval_score, _, new_count = minimax(board, depth - 1, True, new_captures, turn, move, last_move, alpha, beta)
             count+=new_count
             board[row][col] = 0
             for pos in positions_captured:
                 board[pos[0]][pos[1]]=inv_color
             if eval_score < min_eval:
-                print("min")
+                # print(f"min:{eval_score}<{min_eval} as {turn}")
                 min_eval = eval_score
                 best_move = move
             beta = min(beta, eval_score)
@@ -105,7 +108,9 @@ def get_new_captures(board,color,captures,row,col):
                 new_captures[inv_color-1]+=2
     return positions_captured,new_captures
 
-def get_matches(board,row,col,color):
+def get_matches(board,move,color):
+    row=move[0]
+    col=move[1]
     inv_color=3-color
     horizontal_match=1
     vertical_match=1
@@ -184,11 +189,11 @@ def get_matches(board,row,col,color):
 # captures: number of peices captured, captures[0] is white stones(p1) captured by black(p2), captures[1] is black stones(p2) captured by white(p1)
 # turn: 1 if player 1's turn(white) or 2 if player 2's turn(black)
 # num_moves: number of moves since game started
-def do_ai(last_move:tuple[int,int],board:list[list[int]],captures:tuple[int,int],turn:int,num_moves:int)->tuple[int,int]:
+def do_ai(last_move:tuple[int,int],before_last_move:tuple[int,int],board:list[list[int]],captures:tuple[int,int],turn:int,num_moves:int)->tuple[int,int]:
     try:
         depth = 2
         print(f"playing at {last_move}")
-        score, best_move, count = minimax(board, depth, True, captures, turn,last_move)
+        score, best_move, count = minimax(board, depth, True, captures, turn, last_move, before_last_move)
         print(count)
         print(score)
         print(best_move)
