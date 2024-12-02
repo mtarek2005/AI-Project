@@ -21,6 +21,7 @@ num_moves=0
 winner=0
 captures=[0,0]
 game_started=False
+last_move:tuple[int,int]=(9,9)
 
 # define a main function
 def main():
@@ -74,7 +75,7 @@ def menu_on_click(screen:pygame.Surface,font=pygame.font.Font):
 def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
     global num_moves
     global turn
-    global board
+    global board,last_move
     u=min(w,h)/(19)
     loc=pygame.mouse.get_pos()
     int_loc=(int(loc[0]//u),int(loc[1]//u))
@@ -86,7 +87,8 @@ def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
         num_moves+=1
         do_move(int_loc)
         if(ai_type!=None and winner==0):
-            ai_move=do_ai(int_loc, board=board, captures=tuple(captures), turn=turn, num_moves=num_moves)
+            draw(screen,font)
+            ai_move=do_ai(int_loc, last_move, board=board, captures=tuple(captures), turn=turn, num_moves=num_moves)
             if(not (min(ai_move[0],ai_move[1])>=0 and max(ai_move[0],ai_move[1])<19)):
                 raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m out of bounds\033[0m")
             if(board[ai_move[0]][ai_move[1]]!=0):
@@ -95,6 +97,9 @@ def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
             turn=(1 if turn==2 else 2)
             num_moves+=1
             do_move(ai_move)
+            last_move=ai_move
+        else:
+            last_move=int_loc
     draw(screen,font)
 
 def draw_menu(screen:pygame.Surface,font=pygame.font.Font,w:int=w,h:int=h,lw:int=3,bgC:pygame.Color=(161,102,47),rectC:pygame.Color=(10,20,200),fontC:pygame.Color=(255,255,255),wpC:pygame.Color=(220,220,220),bpC:pygame.Color=(40,40,40)):
@@ -244,8 +249,8 @@ def do_move(loc:tuple[int,int]):
     if(captures[1]>=10):
         winner=1
 
-def do_ai(last_move:tuple[int,int],board:list[list[int]]=board,captures:tuple[int,int]=tuple(captures),turn:int=turn,num_moves:int=num_moves)->tuple[int,int]:
-    return AIs[ai_type](last_move,board,captures,turn,num_moves)
+def do_ai(last_move:tuple[int,int],before_last_move:tuple[int,int],board:list[list[int]]=board,captures:tuple[int,int]=tuple(captures),turn:int=turn,num_moves:int=num_moves)->tuple[int,int]:
+    return AIs[ai_type](last_move,before_last_move,board,captures,turn,num_moves)
 
 # run the main function only if this module is executed as the main script
 # (if you import this as a module then nothing is executed)
