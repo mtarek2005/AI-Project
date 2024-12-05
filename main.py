@@ -62,14 +62,18 @@ def main():
 
 def menu_on_click(screen:pygame.Surface,font=pygame.font.Font):
     global ai_type
-    global game_started
+    global game_started,turn,last_move
     u=h/len(ai_choice_menu)
     loc=pygame.mouse.get_pos()
     choice=int(loc[1]//u)
     print(choice)
     ai_type=ai_choice_menu[choice][1]
     print(ai_type)
+    player_color=(loc[0]//(w/2))+1
     game_started=True
+    if player_color>1 and ai_type!=None:
+        do_move((9,9))
+        last_move=(9,9)
     draw(screen,font)
 
 def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
@@ -82,9 +86,6 @@ def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
     print(loc)
     print(int_loc)
     if(board[int_loc[0]][int_loc[1]]==0 and (int_loc==(9,9) or num_moves!=0) and winner==0):
-        board[int_loc[0]][int_loc[1]]=turn
-        turn=(1 if turn==2 else 2)
-        num_moves+=1
         do_move(int_loc)
         if(ai_type!=None and winner==0):
             draw(screen,font)
@@ -93,22 +94,25 @@ def ingame_on_click(screen:pygame.Surface,font=pygame.font.Font):
                 raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m out of bounds\033[0m")
             if(board[ai_move[0]][ai_move[1]]!=0):
                 raise Exception(f"\033[0;31mAI Error: invalid move \033[0;33m({ai_move[0]},{ai_move[1]})\033[0;31m already occupied\033[0m")
-            board[ai_move[0]][ai_move[1]]=turn
-            turn=(1 if turn==2 else 2)
-            num_moves+=1
             do_move(ai_move)
             last_move=ai_move
         else:
             last_move=int_loc
     draw(screen,font)
 
-def draw_menu(screen:pygame.Surface,font=pygame.font.Font,w:int=w,h:int=h,lw:int=3,bgC:pygame.Color=(161,102,47),rectC:pygame.Color=(10,20,200),fontC:pygame.Color=(255,255,255),wpC:pygame.Color=(220,220,220),bpC:pygame.Color=(40,40,40)):
+def draw_menu(screen:pygame.Surface,font=pygame.font.Font,w:int=w,h:int=h,lw:int=3,bgC:pygame.Color=(161,102,47),rectC:pygame.Color=(73.5,105,145),rectLightC:pygame.Color=(140,150,200),rectDarkC:pygame.Color=(7,60,90),fontC:pygame.Color=(255,255,255),wpC:pygame.Color=(220,220,220),bpC:pygame.Color=(40,40,40)):
     u=h/len(ai_choice_menu)
     screen.fill(bgC)
     for i in range(len(ai_choice_menu)):
-        pygame.draw.rect(screen,rectC,(u*0.05,(i+0.05)*u,w-u*0.1,u*0.9))
+        pygame.draw.rect(screen,rectLightC if ai_choice_menu[i][1] else rectC,(u*0.05,(i+0.05)*u,(w-u*0.1)/2,u*0.9))
+        pygame.draw.rect(screen,rectDarkC if ai_choice_menu[i][1] else rectC,(w/2,(i+0.05)*u,(w-u*0.1)/2,u*0.9))
         ren = font.render(ai_choice_menu[i][0], 1, fontC)
-        screen.blit(ren, (w/2-ren.get_width()/2, (i*u)+u/2-ren.get_rect().height/2))
+        screen.blit(ren, (w/2-ren.get_width()/2, (i*u)+u/(4 if ai_choice_menu[i][1] else 2)-ren.get_rect().height/2))
+        if ai_choice_menu[i][1]:
+            ren = font.render("White", 1, fontC)
+            screen.blit(ren, (w/4-ren.get_width()/2, (i*u)+u/(4/3)-ren.get_rect().height/2))
+            ren = font.render("Black", 1, fontC)
+            screen.blit(ren, (w/(4/3)-ren.get_width()/2, (i*u)+u/(4/3)-ren.get_rect().height/2))
     pygame.display.flip()
 
 def draw(screen:pygame.Surface,font=pygame.font.Font,w:int=w,h:int=h,lw:int=3,bgC:pygame.Color=(161,102,47),lnC:pygame.Color=(10,20,10),fontC:pygame.Color=(10,70,10),wpC:pygame.Color=(220,220,220),bpC:pygame.Color=(40,40,40)):
@@ -145,9 +149,13 @@ def do_move(loc:tuple[int,int]):
     global board
     global winner
     global captures
+    global turn,num_moves
     row=loc[0]
     col=loc[1]
-    color=board[row][col]
+    board[row][col]=turn
+    color=turn
+    turn=(1 if turn==2 else 2)
+    num_moves+=1
     inv_color=inv_col(color)
     if(color==0):
         raise Exception(f"\033[0;31mError: invalid board state 0 at \033[0;33m({row},{col})\033[0m")
