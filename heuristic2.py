@@ -6,7 +6,7 @@
 #defensive heuristic
 import math
 
-def do_ai(last_move: tuple[int, int], board: list[list[int]], captures: tuple[int, int], turn: int, num_moves: int) -> tuple[int, int]:
+def do_ai(last_move:tuple[int,int],before_last_move:tuple[int,int],board:list[list[int]],captures:tuple[int,int],turn:int,num_moves:int)->tuple[int,int]:
   
     
     opponent_color = 2 if turn == 1 else 1 
