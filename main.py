@@ -11,7 +11,7 @@ h = 800
 # ai type: None for 2 player game
 ai_type = None
 AIs: dict = {"mnmx":minimax_only.do_ai,"ABp":AB_pruning.do_ai,"h1":heuristic1.do_ai,"h2":heuristic2.do_ai}
-ai_choice_menu = [("No AI",None), ("Minimax","mnmx"), ("Alpha - Beta pruning","ABp"), ("Heuristic Function 1","h1"), ("Heuristic Function 2","h2")]
+ai_choice_menu = [("No AI",None), ("Minimax","mnmx"), ("Alpha - Beta pruning","ABp"), ("Heuristic Function 1: \"Aggressive\"","h1"), ("Heuristic Function 2: \"Defensive\"","h2")]
 
 #positions: 0 empty, 1 white, 2 black
 board = [[0] * 19 for i in range(19)]
