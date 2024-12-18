@@ -1,6 +1,7 @@
 # import the pygame module, so you can use it
 # install with `pip install pygame`
 import pygame
+import time
 import minimax_only
 import AB_pruning
 import heuristic1
@@ -199,7 +200,11 @@ def do_move(loc: tuple[int, int]):
         winner = 1
 
 def do_ai(last_move: tuple[int, int], before_last_move: tuple[int, int], board: list[list[int]], captures: tuple[int, int], turn: int = turn, num_moves: int = num_moves)->tuple[int, int]:
-    return AIs[ai_type](last_move, before_last_move, board, captures, turn, num_moves)
+    start_time=time.time()
+    move = AIs[ai_type](last_move, before_last_move, board, captures, turn, num_moves)
+    end_time=time.time()
+    print(f"took {end_time-start_time}s to move")
+    return move
 
 # run the main function only if this module is executed as the main script
 # (if you import this as a module then nothing is executed)
