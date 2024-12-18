@@ -194,7 +194,7 @@ def do_ai(last_move:tuple[int,int],before_last_move:tuple[int,int],board:list[li
         depth = 2
         print(f"playing at {last_move}")
         score, best_move, count = minimax(board, depth, True, captures, turn, last_move, before_last_move)
-        print(count)
+        print(f"searched {count} moves")
         print(score)
         print(best_move)
         if best_move and 0 <= best_move[0] < 19 and 0 <= best_move[1] < 19:
